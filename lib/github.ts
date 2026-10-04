@@ -2,7 +2,6 @@ import { Octokit } from '@octokit/rest';
 import type { ProjectEntry } from './zipHandler';
 import type { IconFile } from './iconResizer';
 
-// Nilai di-inline oleh next.config.js saat build (akses harus statis).
 const TOKEN = process.env.GITHUB_TOKEN || '';
 const OWNER = process.env.REPO_OWNER || '';
 const REPO = process.env.REPO_NAME || '';
@@ -40,7 +39,6 @@ async function blobToBase64(blob: Blob): Promise<string> {
   return btoa(bin);
 }
 
-/** Push seluruh project + icon sebagai 1 commit ke branch main. */
 export async function pushProject(
   entries: ProjectEntry[],
   icons: IconFile[],
@@ -50,14 +48,14 @@ export async function pushProject(
   const octokit = client();
   const base = { owner: OWNER, repo: REPO };
 
-  const ref = await octokit.git.getRef({ ...base, ref: `heads/${BRANCH}` });
+  const ref = await octokit.git.getRef({...base, ref: `heads/${BRANCH}` });
   const parentSha = ref.data.object.sha;
-  const parent = await octokit.git.getCommit({ ...base, commit_sha: parentSha });
-  const baseTree = await octokit.git.getTree({ ...base, tree_sha: parent.data.tree.sha, recursive: 'true' });
+  const parent = await octokit.git.getCommit({...base, commit_sha: parentSha });
+  const baseTree = await octokit.git.getTree({...base, tree_sha: parent.data.tree.sha, recursive: 'true' });
 
   const map = new Map<string, () => Promise<string>>();
   entries.forEach((e) => map.set(e.path, e.read));
-  icons.forEach((i) => map.set(i.path, () => blobToBase64(i.blob))); // icon menimpa file lama
+  icons.forEach((i) => map.set(i.path, () => blobToBase64(i.blob)));
   const list = Array.from(map.entries());
 
   const tree: { path: string; mode: '100644'; type: 'blob'; sha: string | null }[] = [];
@@ -67,7 +65,7 @@ export async function pushProject(
     const created = await Promise.all(
       slice.map(async ([path, read]) => {
         const content = await read();
-        const b = await octokit.git.createBlob({ ...base, content, encoding: 'base64' });
+        const b = await octokit.git.createBlob({...base, content, encoding: 'base64' });
         return { path, mode: '100644' as const, type: 'blob' as const, sha: b.data.sha };
       })
     );
@@ -76,28 +74,26 @@ export async function pushProject(
     onProgress?.(done, list.length);
   }
 
-  // Hapus file project lama yang tidak ada di ZIP baru (workflow di .github dilindungi).
   for (const t of baseTree.data.tree) {
-    if (t.type === 'blob' && t.path && !map.has(t.path) && !t.path.startsWith('.github/')) {
+    if (t.type === 'blob' && t.path &&!map.has(t.path) &&!t.path.startsWith('.github/')) {
       tree.push({ path: t.path, mode: '100644', type: 'blob', sha: null });
     }
   }
 
   const newTree = await octokit.git.createTree({
-    ...base,
+   ...base,
     base_tree: parent.data.tree.sha,
     tree: tree as any,
   });
   const commit = await octokit.git.createCommit({
-    ...base,
+   ...base,
     message: `Alyzz build: ${meta.appName} (${meta.pkg}) [skip ci]`,
     tree: newTree.data.sha,
     parents: [parentSha],
   });
-  await octokit.git.updateRef({ ...base, ref: `heads/${BRANCH}`, sha: commit.data.sha });
+  await octokit.git.updateRef({...base, ref: `heads/${BRANCH}`, sha: commit.data.sha });
 }
 
-/** Trigger workflow_dispatch. Mengembalikan requestId untuk mencocokkan run. */
 export async function triggerBuild(appName: string, packageName: string): Promise<string> {
   const octokit = client();
   const requestId = `rq${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
@@ -136,15 +132,12 @@ async function fetchApk(runNumber: number): Promise<ApkInfo> {
           fileName: pick.name,
         };
       }
-    } catch {
-      /* release belum muncul */
-    }
+    } catch {}
     await sleep(5000);
   }
   throw new Error('Build selesai tetapi APK tidak ditemukan di GitHub Release.');
 }
 
-/** Polling status build tiap 5 detik sampai selesai. */
 export async function pollBuild(
   requestId: string,
   onUpdate: (steps: BuildStep[], runUrl?: string) => void,
@@ -160,7 +153,7 @@ export async function pollBuild(
 
     if (runId === null) {
       const runs = await octokit.actions.listWorkflowRuns({
-        ...base,
+       ...base,
         workflow_id: WORKFLOW_FILE,
         event: 'workflow_dispatch',
         per_page: 15,
@@ -174,21 +167,21 @@ export async function pollBuild(
       runNumber = found.run_number;
     }
 
-    const run = await octokit.actions.getWorkflowRun({ ...base, run_id: runId });
-    const jobs = await octokit.actions.listJobsForWorkflowRun({ ...base, run_id: runId });
+    const run = await octokit.actions.getWorkflowRun({...base, run_id: runId });
+    const jobs = await octokit.actions.listJobsForWorkflowRun({...base, run_id: runId });
     const job = jobs.data.jobs[0];
     const steps: BuildStep[] = job
-      ? job.steps
-          .filter((s) => !/^(Set up job|Complete job|Post )/.test(s.name))
-          .map((s) => mapStep(s))
+     ? (job.steps || [])
+         .filter((s) =>!/^(Set up job|Complete job|Post )/.test(s.name))
+         .map((s) => mapStep(s))
       : [{ name: 'Queued', status: 'running' }];
-    onUpdate(steps.length ? steps : [{ name: 'Queued', status: 'running' }], run.data.html_url);
+    onUpdate(steps.length? steps : [{ name: 'Queued', status: 'running' }], run.data.html_url);
 
     if (run.data.status === 'completed') {
-      if (run.data.conclusion !== 'success') {
+      if (run.data.conclusion!== 'success') {
         throw new Error(`Build ${run.data.conclusion}. Cek log: ${run.data.html_url}`);
       }
       return fetchApk(runNumber);
     }
   }
-}
+  }
