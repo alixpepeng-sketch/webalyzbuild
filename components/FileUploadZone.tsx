@@ -42,12 +42,16 @@ export default function FileUploadZone({ parsed, onParsed, onError }: Props) {
           setDrag(false);
           handle(e.dataTransfer.files?.[0]);
         }}
-        className={`cursor-pointer border-[3px] border-dashed border-black p-4 text-center ${
-          drag ? 'bg-black text-white' : 'bg-mist'
+        className={`cursor-pointer rounded-3xl border-2 border-dashed p-5 text-center transition-all duration-300 ease-smooth active:scale-[0.98] ${
+          drag ? 'scale-[1.02] border-black bg-black text-white' : 'border-black/20 bg-mist hover:border-black/60'
         }`}
       >
-        <p className="font-bold text-sm">{loading ? 'MEMBACA ZIP...' : 'DRAG DROP ZIP PROJECT FLUTTER'}</p>
-        <p className="text-xs mt-1">atau klik untuk memilih file .zip</p>
+        <svg viewBox="0 0 24 24" className="mx-auto mb-2 h-7 w-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 16V4m0 0l-4 4m4-4l4 4" />
+          <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
+        </svg>
+        <p className="text-sm font-semibold">{loading ? 'Membaca ZIP...' : 'Drag drop ZIP project Flutter'}</p>
+        <p className="mt-0.5 text-xs opacity-60">atau ketuk untuk memilih file .zip</p>
         <input
           ref={inputRef}
           type="file"
@@ -60,9 +64,11 @@ export default function FileUploadZone({ parsed, onParsed, onError }: Props) {
         />
       </div>
       {parsed && (
-        <p className="mt-2 text-xs font-bold break-all">
-          {parsed.name} : {parsed.paths.length} file
-        </p>
+        <div className="mt-2 animate-rise rounded-full bg-black px-4 py-2 text-xs font-semibold text-white">
+          <span className="break-all">
+            {parsed.name} &bull; {parsed.paths.length} file
+          </span>
+        </div>
       )}
     </div>
   );

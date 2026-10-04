@@ -33,17 +33,29 @@ export default function ChatBubble({ role, text = '', stream = false, action, ch
   const isUser = role === 'user';
 
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-      <div className={`max-w-[92%] sm:max-w-[80%] ${isUser ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
-        <span className="text-[11px] font-bold tracking-widest">{isUser ? 'USER' : 'ALYZZ AI'}</span>
+    <div className={`flex gap-2.5 animate-rise ${isUser ? 'flex-row-reverse' : ''}`}>
+      {!isUser && (
+        <div className="mt-5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black text-xs font-bold text-white shadow-bubble">
+          A
+        </div>
+      )}
+      <div className={`flex max-w-[88%] flex-col gap-1 sm:max-w-[78%] ${isUser ? 'items-end' : 'items-start'}`}>
+        <span className="px-1 text-[10px] font-semibold tracking-widest text-black/40">{isUser ? 'KAMU' : 'ALYZZ AI'}</span>
         <div
-          className={`border-[3px] border-black p-3 shadow-brutsm break-words ${
-            isUser ? 'bg-black text-white' : 'bg-white text-black'
+          className={`break-words px-4 py-3 shadow-bubble ${
+            isUser
+              ? 'rounded-3xl rounded-tr-lg bg-black text-white'
+              : 'rounded-3xl rounded-tl-lg bg-white text-black ring-1 ring-black/5'
           }`}
         >
-          {text && <p className="whitespace-pre-wrap text-[15px] leading-snug">{shown}</p>}
+          {text && (
+            <p className="whitespace-pre-wrap text-[15px] leading-relaxed">
+              {shown}
+              {stream && !done && <span className="ml-0.5 inline-block h-4 w-[2px] animate-pulse bg-current align-middle" />}
+            </p>
+          )}
           {children}
-          {action && done && <div className="mt-3">{action}</div>}
+          {action && done && <div className="mt-3 animate-rise">{action}</div>}
         </div>
       </div>
     </div>
