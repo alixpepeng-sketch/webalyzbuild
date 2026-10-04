@@ -11,16 +11,16 @@ body {
   height: 100dvh;
   margin: 0;
   padding: 0;
-  background: #ffffff;
   color: #000000;
+  background: radial-gradient(1100px 600px at 15% -10%, #ffffff 0%, rgba(255, 255, 255, 0) 60%), #f5f5f5;
   font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
   overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
 }
 
 * {
   box-sizing: border-box;
-  border-radius: 0px !important;
 }
 
 input,
@@ -29,30 +29,96 @@ textarea {
   font-family: inherit;
 }
 
-@layer components {
-  .brut {
-    @apply border-[3px] border-black bg-white shadow-brut;
-  }
-  .brut-sm {
-    @apply border-[3px] border-black bg-white shadow-brutsm;
-  }
-  .brut-btn {
-    @apply border-[3px] border-black bg-black text-white font-bold shadow-brutsm
-      transition-transform active:translate-x-[4px] active:translate-y-[4px] active:shadow-none
-      disabled:bg-white disabled:text-black disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed;
-  }
-  .brut-input {
-    @apply w-full border-[3px] border-black bg-white px-3 py-3 text-base outline-none focus:shadow-brutsm;
-  }
+/* Tombol: smooth, ada rasa "empuk" saat ditekan */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  background: #000;
+  color: #fff;
+  font-weight: 600;
+  user-select: none;
+  cursor: pointer;
+  box-shadow: 0 10px 22px -8px rgba(0, 0, 0, 0.5);
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease, opacity 0.2s ease;
+  will-change: transform;
+}
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px -8px rgba(0, 0, 0, 0.55);
+}
+.btn:active:not(:disabled) {
+  transform: scale(0.96);
+  box-shadow: 0 4px 10px -4px rgba(0, 0, 0, 0.5);
+  transition-duration: 0.08s;
+}
+.btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.06);
+  color: #000;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.2s ease;
+}
+.btn-ghost:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+.btn-ghost:active {
+  transform: scale(0.95);
+}
+
+.field {
+  width: 100%;
+  border-radius: 1rem;
+  background: #f5f5f5;
+  padding: 0.8rem 1rem;
+  font-size: 16px;
+  outline: none;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s ease, background-color 0.2s ease;
+}
+.field:focus {
+  background: #fff;
+  box-shadow: inset 0 0 0 2px #000, 0 6px 18px -8px rgba(0, 0, 0, 0.3);
+}
+
+.label {
+  display: block;
+  margin: 0 0 0.4rem 0.25rem;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.5);
 }
 
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #f5f5f5;
-  border-left: 3px solid #000000;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #000000;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
